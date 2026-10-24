@@ -112,6 +112,39 @@ async function runTests() {
       if (res.body.database !== 'connected') throw new Error('Database not connected in health response');
     });
 
+    // 1b. CORS Preflight & Origin Handling
+    await runTest('OPTIONS preflight respects configured CLIENT_ORIGIN with credentials', async () => {
+      const res = await client.request('/api/auth/login', {
+        method: 'OPTIONS',
+        headers: {
+          Origin: 'http://localhost:3000',
+          'Access-Control-Request-Method': 'POST',
+          'Access-Control-Request-Headers': 'Content-Type',
+        },
+      });
+      if (res.status !== 204) throw new Error(`Expected status 204, got ${res.status}`);
+      if (res.headers.get('access-control-allow-origin') !== 'http://localhost:3000') {
+        throw new Error(`Expected origin http://localhost:3000, got ${res.headers.get('access-control-allow-origin')}`);
+      }
+      if (res.headers.get('access-control-allow-credentials') !== 'true') {
+        throw new Error('Expected credentials header to be true');
+      }
+    });
+
+    await runTest('OPTIONS preflight for unconfigured origin does not return allow origin header', async () => {
+      const res = await client.request('/api/auth/login', {
+        method: 'OPTIONS',
+        headers: {
+          Origin: 'https://unauthorized-origin.com',
+          'Access-Control-Request-Method': 'POST',
+        },
+      });
+      if (res.status === 500) throw new Error('CORS rejected preflight must not crash with 500');
+      if (res.headers.get('access-control-allow-origin')) {
+        throw new Error('Unconfigured origin must not receive Access-Control-Allow-Origin header');
+      }
+    });
+
     // 2. Authentication: Register Customer
     const testEmail = `test.producer.${Date.now()}@agency.com`;
     let verificationOtp = '';

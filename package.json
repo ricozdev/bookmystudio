@@ -12,6 +12,7 @@
     "server:start": "pnpm --filter bookmystudio-server start",
     "server:seed": "pnpm --filter bookmystudio-server seed",
     "server:test": "pnpm --filter bookmystudio-server test",
+    "server:test:cors": "pnpm --filter bookmystudio-server test:cors",
     "server:verify-smtp": "pnpm --filter bookmystudio-server verify-smtp",
     "admin:reset-password": "pnpm --filter bookmystudio-server admin:reset-password",
     "build:backend": "pnpm --filter bookmystudio-server build",
