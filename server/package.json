@@ -1,6 +1,6 @@
 {
   "name": "bookmystudio-server",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "BookMyStudio Backend API Server (Express + MongoDB + Mongoose)",
   "private": true,
   "main": "dist/index.js",
