@@ -39,23 +39,70 @@ export function createApp(): Express {
     })
   );
 
-  // Strict CORS Configuration
-  const allowedOrigins = [env.CLIENT_ORIGIN, 'http://localhost:3000', 'http://127.0.0.1:3000'];
-  app.use(
-    cors({
-      origin: (origin, callback) => {
-        // Allow requests with no origin (e.g., mobile apps, curl, server-to-server)
-        if (!origin) return callback(null, true);
-        if (allowedOrigins.includes(origin) || env.NODE_ENV === 'development') {
-          return callback(null, true);
-        }
-        callback(new Error(`CORS blocked request from origin: ${origin}`));
-      },
-      credentials: true,
-      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-    })
-  );
+  // CORS Configuration
+  const configuredOrigins = env.CLIENT_ORIGIN
+    .split(',')
+    .map((origin) => origin.trim().replace(/\/$/, ''))
+    .filter(Boolean);
+
+  const defaultOrigins = [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'https://bookmystudio.ricoz.in',
+  ];
+
+  const allowedOrigins = Array.from(new Set([...configuredOrigins, ...defaultOrigins]));
+
+  const isOriginAllowed = (origin: string): boolean => {
+    // 1. Exact match in configured allowed origins
+    if (allowedOrigins.includes(origin)) return true;
+
+    // 2. Allow Vercel preview and production deployment URLs
+    if (
+      /^https:\/\/bookmystudio.*\.vercel\.app$/.test(origin) ||
+      /^https:\/\/.*-sairaghuveer85-cpus-projects\.vercel\.app$/.test(origin) ||
+      origin.endsWith('.vercel.app')
+    ) {
+      return true;
+    }
+
+    // 3. Allow ricoz.in subdomains
+    if (/^https:\/\/([a-zA-Z0-9-]+\.)*ricoz\.in$/.test(origin)) {
+      return true;
+    }
+
+    // 4. In development mode, allow any origin
+    if (env.NODE_ENV === 'development') {
+      return true;
+    }
+
+    return false;
+  };
+
+  const corsOptions: cors.CorsOptions = {
+    origin: (origin, callback) => {
+      // Allow requests with no origin (e.g., mobile apps, curl, server-to-server)
+      if (!origin) return callback(null, true);
+      if (isOriginAllowed(origin)) {
+        return callback(null, true);
+      }
+      return callback(null, false);
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Requested-With',
+      'Accept',
+      'Origin',
+      'x-request-id',
+    ],
+    optionsSuccessStatus: 204,
+  };
+
+  app.use(cors(corsOptions));
+  app.options('*', cors(corsOptions));
 
   // Body Parsing
   app.use(express.json({ limit: '10mb' }));
