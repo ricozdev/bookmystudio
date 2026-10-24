@@ -67,7 +67,7 @@ jobs:
         run: |
           pnpm install --frozen-lockfile
           pnpm --filter bookmystudio-server build
-          pnpm --filter bookmystudio-server --prod deploy ./bundle
+          pnpm --filter bookmystudio-server --prod deploy --legacy ./bundle
           if [ -d "server/dist" ] && [ ! -d "bundle/dist" ]; then
             cp -r server/dist bundle/dist
           fi 
