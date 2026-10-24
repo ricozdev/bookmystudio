@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="100%" height="100%">
+  <defs>
+    <linearGradient id="loftWall" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="60%" stop-color="#f8fafc"/>
+      <stop offset="100%" stop-color="#f1f5f9"/>
+    </linearGradient>
+    <linearGradient id="bleachedMaple" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#fef3c7"/>
+      <stop offset="50%" stop-color="#fde68a"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="800" height="500" fill="url(#loftWall)"/>
+
+  <!-- High Ceiling Architectural Moldings -->
+  <line x1="0" y1="30" x2="800" y2="30" stroke="#cbd5e1" stroke-width="3"/>
+  <line x1="0" y1="45" x2="800" y2="45" stroke="#e2e8f0" stroke-width="2"/>
+
+  <!-- Grand Arched Cast Iron Windows in Background -->
+  <g stroke="#1e293b" stroke-width="3" fill="#ffffff" opacity="0.95">
+    <path d="M 100,50 Q 180,10 260,50 L 260,260 L 100,260 Z"/>
+    <line x1="180" y1="25" x2="180" y2="260"/>
+    <line x1="100" y1="100" x2="260" y2="100"/>
+    <line x1="100" y1="150" x2="260" y2="150"/>
+    <line x1="100" y1="200" x2="260" y2="200"/>
+
+    <path d="M 320,50 Q 400,10 480,50 L 480,260 L 320,260 Z"/>
+    <line x1="400" y1="25" x2="400" y2="260"/>
+    <line x1="320" y1="100" x2="480" y2="100"/>
+    <line x1="320" y1="150" x2="480" y2="150"/>
+    <line x1="320" y1="200" x2="480" y2="200"/>
+
+    <path d="M 540,50 Q 620,10 700,50 L 700,260 L 540,260 Z"/>
+    <line x1="620" y1="25" x2="620" y2="260"/>
+    <line x1="540" y1="100" x2="700" y2="100"/>
+    <line x1="540" y1="150" x2="700" y2="150"/>
+    <line x1="540" y1="200" x2="700" y2="200"/>
+  </g>
+
+  <!-- Bleached Maple Wood Floor -->
+  <polygon points="0,260 800,260 800,500 0,500" fill="url(#bleachedMaple)"/>
+  <g stroke="#d97706" stroke-width="1" opacity="0.3">
+    <line x1="400" y1="260" x2="0" y2="480"/>
+    <line x1="400" y1="260" x2="200" y2="500"/>
+    <line x1="400" y1="260" x2="400" y2="500"/>
+    <line x1="400" y1="260" x2="600" y2="500"/>
+    <line x1="400" y1="260" x2="800" y2="480"/>
+  </g>
+
+  <!-- Corinthian Cast-Iron Architectural Columns -->
+  <g transform="translate(60, 0)">
+    <rect x="0" y="0" width="30" height="280" fill="#0f172a"/>
+    <line x1="8" y1="0" x2="8" y2="280" stroke="#334155" stroke-width="2"/>
+    <line x1="22" y1="0" x2="22" y2="280" stroke="#334155" stroke-width="2"/>
+    <rect x="-8" y="0" width="46" height="25" rx="3" fill="#090d16"/>
+    <rect x="-8" y="250" width="46" height="35" rx="3" fill="#090d16"/>
+  </g>
+
+  <g transform="translate(710, 0)">
+    <rect x="0" y="0" width="30" height="280" fill="#0f172a"/>
+    <line x1="8" y1="0" x2="8" y2="280" stroke="#334155" stroke-width="2"/>
+    <line x1="22" y1="0" x2="22" y2="280" stroke="#334155" stroke-width="2"/>
+    <rect x="-8" y="0" width="46" height="25" rx="3" fill="#090d16"/>
+    <rect x="-8" y="250" width="46" height="35" rx="3" fill="#090d16"/>
+  </g>
+
+  <text x="30" y="475" font-family="system-ui, sans-serif" font-size="11" font-weight="700" letter-spacing="1.5" fill="#78350f">TRIBECA HISTORIC DISTRICT · 4,800 SQ FT CORINTHIAN LOFT · 18FT CEILINGS</text>
+</svg>
+

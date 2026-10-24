@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="100%" height="100%">
+  <defs>
+    <linearGradient id="loftSky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="70%" stop-color="#f8fafc"/>
+      <stop offset="100%" stop-color="#f1f5f9"/>
+    </linearGradient>
+    <linearGradient id="hardwood" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#d97706"/>
+      <stop offset="25%" stop-color="#b45309"/>
+      <stop offset="60%" stop-color="#92400e"/>
+      <stop offset="100%" stop-color="#78350f"/>
+    </linearGradient>
+    <linearGradient id="sunStream" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a" stop-opacity="0.45"/>
+      <stop offset="60%" stop-color="#fef9c3" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="stainless" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f1f5f9"/>
+      <stop offset="40%" stop-color="#cbd5e1"/>
+      <stop offset="100%" stop-color="#94a3b8"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Luminous Loft Wall & Sunlight -->
+  <rect width="800" height="500" fill="url(#loftSky)"/>
+
+  <!-- SoHo Cast-Iron Factory Window Arches in Background -->
+  <g stroke="#334155" stroke-width="3" fill="#ffffff" opacity="0.95">
+    <!-- Window 1 -->
+    <path d="M 80,60 Q 140,20 200,60 L 200,280 L 80,280 Z"/>
+    <line x1="140" y1="35" x2="140" y2="280"/>
+    <line x1="80" y1="110" x2="200" y2="110"/>
+    <line x1="80" y1="165" x2="200" y2="165"/>
+    <line x1="80" y1="220" x2="200" y2="220"/>
+
+    <!-- Window 2 (Center) -->
+    <path d="M 280,60 Q 340,20 400,60 L 400,280 L 280,280 Z"/>
+    <line x1="340" y1="35" x2="340" y2="280"/>
+    <line x1="280" y1="110" x2="400" y2="110"/>
+    <line x1="280" y1="165" x2="400" y2="165"/>
+    <line x1="280" y1="220" x2="400" y2="220"/>
+
+    <!-- Window 3 -->
+    <path d="M 480,60 Q 540,20 600,60 L 600,280 L 480,280 Z"/>
+    <line x1="540" y1="35" x2="540" y2="280"/>
+    <line x1="480" y1="110" x2="600" y2="110"/>
+    <line x1="480" y1="165" x2="600" y2="165"/>
+    <line x1="480" y1="220" x2="600" y2="220"/>
+  </g>
+
+  <!-- Dramatic Warm Sunlight Streams Across Room -->
+  <polygon points="120,40 500,480 300,500 80,200" fill="url(#sunStream)"/>
+  <polygon points="320,40 750,480 550,500 280,200" fill="url(#sunStream)"/>
+
+  <!-- Warm Oak / Maple Hardwood Floor with Planks -->
+  <polygon points="0,280 800,280 800,500 0,500" fill="url(#hardwood)"/>
+  <g stroke="#451a03" stroke-width="1" opacity="0.4">
+    <!-- Perspective Floor Board Lines -->
+    <line x1="400" y1="280" x2="0" y2="460"/>
+    <line x1="400" y1="280" x2="160" y2="500"/>
+    <line x1="400" y1="280" x2="360" y2="500"/>
+    <line x1="400" y1="280" x2="560" y2="500"/>
+    <line x1="400" y1="280" x2="740" y2="500"/>
+    <line x1="400" y1="280" x2="800" y2="440"/>
+  </g>
+
+  <!-- Commercial Culinary Kitchen Island & Prep Set in Center -->
+  <g transform="translate(360, 240)">
+    <!-- Stainless Island Counter Body -->
+    <polygon points="-120,45 160,45 220,95 -60,95" fill="url(#stainless)"/>
+    <polygon points="-60,95 220,95 220,165 -60,165" fill="#475569"/>
+    <polygon points="-120,45 -60,95 -60,165 -120,115" fill="#334155"/>
+    
+    <!-- Cooktop Range & Gas Burners -->
+    <rect x="-10" y="55" width="70" height="28" rx="2" fill="#0f172a" stroke="#64748b" stroke-width="1"/>
+    <circle cx="8" cy="69" r="6" stroke="#94a3b8" stroke-width="1.5" fill="none"/>
+    <circle cx="42" cy="69" r="6" stroke="#94a3b8" stroke-width="1.5" fill="none"/>
+
+    <!-- Prep Boards, Produce & Props -->
+    <rect x="85" y="60" width="35" height="22" rx="1" fill="#b45309"/>
+    <circle cx="100" cy="71" r="5" fill="#10b981"/>
+    <circle cx="140" cy="75" r="7" fill="#ef4444"/>
+  </g>
+
+  <!-- Left Cast-Iron Fluted Architectural Column -->
+  <g transform="translate(60, 0)">
+    <rect x="0" y="0" width="28" height="300" fill="#1e293b"/>
+    <line x1="8" y1="0" x2="8" y2="300" stroke="#334155" stroke-width="2"/>
+    <line x1="20" y1="0" x2="20" y2="300" stroke="#334155" stroke-width="2"/>
+    <!-- Capital & Base -->
+    <rect x="-8" y="0" width="44" height="20" fill="#0f172a"/>
+    <rect x="-8" y="270" width="44" height="30" fill="#0f172a"/>
+  </g>
+
+  <!-- Spec Label Tag -->
+  <text x="30" y="475" font-family="system-ui, sans-serif" font-size="11" font-weight="700" letter-spacing="1.5" fill="#ffffff">SOHO LOFT · 3,100 SQ FT · NATURAL ALL-DAY SKYLIGHT</text>
+</svg>
+

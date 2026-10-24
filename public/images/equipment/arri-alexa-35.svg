@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="100%" height="100%">
+  <defs>
+    <linearGradient id="studioStageBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#090d16"/>
+    </linearGradient>
+    <radialGradient id="lensReflect" cx="40%" cy="40%" r="50%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.9"/>
+      <stop offset="60%" stop-color="#1d4ed8" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#020617" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="800" height="500" fill="url(#studioStageBg)"/>
+
+  <!-- Pedestal Base shadow -->
+  <ellipse cx="400" cy="420" rx="220" ry="25" fill="#020617" opacity="0.6"/>
+
+  <!-- ARRI Alexa 35 Cinema Camera Package Drawing in Center -->
+  <g transform="translate(220, 100)">
+    <!-- Bridgeplate & 19mm Studio Rods -->
+    <rect x="60" y="270" width="300" height="12" rx="4" fill="#334155" stroke="#475569" stroke-width="1.5"/>
+    <rect x="60" y="290" width="300" height="12" rx="4" fill="#334155" stroke="#475569" stroke-width="1.5"/>
+
+    <!-- Camera Body (Matte black ARRI magnesium chassis) -->
+    <rect x="150" y="100" width="160" height="170" rx="8" fill="#090d16" stroke="#475569" stroke-width="3"/>
+    
+    <!-- ARRI Yellow Side Logo Badge -->
+    <rect x="165" y="120" width="45" height="16" rx="2" fill="#eab308"/>
+    <text x="170" y="132" font-family="sans-serif" font-size="10" font-weight="900" fill="#090d16">ARRI</text>
+    
+    <!-- Operator Side Display Screen with Timecode -->
+    <rect x="165" y="150" width="100" height="65" rx="3" fill="#020617" stroke="#334155" stroke-width="1.5"/>
+    <text x="175" y="172" font-family="monospace" font-size="11" font-weight="700" fill="#38bdf8">24.000 fps</text>
+    <text x="175" y="192" font-family="monospace" font-size="11" font-weight="700" fill="#22c55e">ARRIRAW 4.6K</text>
+    <text x="175" y="206" font-family="monospace" font-size="9" fill="#94a3b8">EI 800 · 5600K</text>
+
+    <!-- Top Handle & CCH-1 Rigging -->
+    <path d="M 170,100 L 170,60 L 300,60 L 300,100" stroke="#475569" stroke-width="8" stroke-linecap="round" fill="none"/>
+    <rect x="200" y="52" width="70" height="14" rx="2" fill="#1e293b"/>
+
+    <!-- LPL Lens Mount & Master Prime Cine Lens extending forward -->
+    <rect x="60" y="130" width="90" height="110" rx="4" fill="#18181b" stroke="#334155" stroke-width="2"/>
+    <circle cx="105" cy="185" r="45" fill="#020617" stroke="#475569" stroke-width="3"/>
+    <circle cx="105" cy="185" r="35" fill="url(#lensReflect)"/>
+    <!-- Focus, Iris & Zoom Gear Rings -->
+    <line x1="75" y1="130" x2="75" y2="240" stroke="#64748b" stroke-width="3" stroke-dasharray="4 2"/>
+    <line x1="110" y1="130" x2="110" y2="240" stroke="#64748b" stroke-width="3" stroke-dasharray="4 2"/>
+    <line x1="135" y1="130" x2="135" y2="240" stroke="#64748b" stroke-width="3" stroke-dasharray="4 2"/>
+
+    <!-- 4x5.65 Clip-on Matte Box with Carbon Fiber Eyebrow Flag -->
+    <polygon points="60,110 5,80 5,290 60,260" fill="#090d16" stroke="#475569" stroke-width="2"/>
+    <polygon points="5,80 70,80 60,50 -5,50" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+
+    <!-- On-Board ARRI Viewfinder MVF-2 -->
+    <rect x="250" y="70" width="55" height="35" rx="3" fill="#0f172a" stroke="#64748b" stroke-width="2"/>
+    <rect x="255" y="75" width="45" height="25" fill="#38bdf8" opacity="0.8"/>
+
+    <!-- Rear Gold Mount Battery Adapter & B-Mount Pack -->
+    <rect x="310" y="125" width="45" height="120" rx="4" fill="#1e293b" stroke="#475569" stroke-width="2"/>
+    <rect x="355" y="140" width="25" height="90" rx="2" fill="#020617"/>
+    <circle cx="340" cy="150" r="3" fill="#22c55e"/>
+    <circle cx="340" cy="160" r="3" fill="#22c55e"/>
+    <circle cx="340" cy="170" r="3" fill="#22c55e"/>
+    <circle cx="340" cy="180" r="3" fill="#22c55e"/>
+  </g>
+
+  <text x="30" y="475" font-family="system-ui, sans-serif" font-size="11" font-weight="700" letter-spacing="1.5" fill="#94a3b8">ARRI ALEXA 35 PRODUCTION SET · 4.6K SUPERSAMPLE · LPL MOUNT</text>
+</svg>
+

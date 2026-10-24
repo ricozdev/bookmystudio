@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="100%" height="100%">
+  <defs>
+    <linearGradient id="lightingStudioBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </linearGradient>
+    <radialGradient id="lampGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="30%" stop-color="#38bdf8" stop-opacity="0.9"/>
+      <stop offset="70%" stop-color="#0284c7" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#0f172a" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="800" height="500" fill="url(#lightingStudioBg)"/>
+
+  <!-- High-Output Beam of Light Projection -->
+  <polygon points="400,210 0,0 0,500" fill="url(#lampGlow)" opacity="0.35"/>
+
+  <!-- Heavy Duty Junior C-Stand / Mombo Combo Stand Support -->
+  <g stroke="#334155" stroke-width="6" fill="none">
+    <line x1="480" y1="260" x2="480" y2="480"/>
+    <path d="M 430,480 L 480,450 L 530,480"/>
+    <circle cx="430" cy="480" r="5" fill="#475569"/>
+    <circle cx="530" cy="480" r="5" fill="#475569"/>
+  </g>
+
+  <!-- Aputure Electro Storm CS15 Fixture & Motorized Yoke -->
+  <g transform="translate(320, 120)">
+    <!-- Motorized Steel Yoke Arm -->
+    <path d="M 160,50 C 220,50 220,180 160,180" stroke="#475569" stroke-width="10" stroke-linecap="round" fill="none"/>
+    <circle cx="210" cy="115" r="14" fill="#0f172a" stroke="#64748b" stroke-width="2"/>
+
+    <!-- Lamp Head Body (Robust Aluminum Extrusion with cooling vents) -->
+    <rect x="50" y="60" width="120" height="110" rx="8" fill="#18181b" stroke="#334155" stroke-width="3"/>
+    <!-- Cooling Fins -->
+    <line x1="70" y1="80" x2="150" y2="80" stroke="#38bdf8" stroke-width="2"/>
+    <line x1="70" y1="95" x2="150" y2="95" stroke="#38bdf8" stroke-width="2"/>
+    <line x1="70" y1="110" x2="150" y2="110" stroke="#38bdf8" stroke-width="2"/>
+    <line x1="70" y1="125" x2="150" y2="125" stroke="#38bdf8" stroke-width="2"/>
+    <line x1="70" y1="140" x2="150" y2="140" stroke="#38bdf8" stroke-width="2"/>
+
+    <!-- Aputure Blue Brand Stripe -->
+    <rect x="50" y="160" width="120" height="10" fill="#0284c7"/>
+
+    <!-- Large 350mm Motorized F14 Fresnel Lens on Front -->
+    <polygon points="50,65 -20,35 -20,195 50,165" fill="#090d16" stroke="#475569" stroke-width="2"/>
+    <ellipse cx="-20" cy="115" rx="15" ry="80" fill="#0284c7" stroke="#38bdf8" stroke-width="3"/>
+    <ellipse cx="-20" cy="115" rx="8" ry="60" fill="#ffffff" opacity="0.9"/>
+
+    <!-- Heavy Duty Camlock Power Lead extending down -->
+    <path d="M 150,160 Q 180,240 220,290" stroke="#e11d48" stroke-width="6" fill="none"/>
+  </g>
+
+  <!-- Separate High-Power Ballast Unit on Floor -->
+  <g transform="translate(560, 310)">
+    <rect width="130" height="120" rx="6" fill="#090d16" stroke="#334155" stroke-width="2"/>
+    <rect x="15" y="15" width="100" height="30" rx="3" fill="#020617"/>
+    <text x="25" y="34" font-family="monospace" font-size="12" font-weight="700" fill="#38bdf8">1500W · 100%</text>
+    <circle cx="30" cy="70" r="10" fill="#334155"/>
+    <circle cx="65" cy="70" r="10" fill="#334155"/>
+    <circle cx="100" cy="70" r="10" fill="#334155"/>
+    <!-- Red Camlock Connector Port -->
+    <circle cx="35" cy="100" r="6" fill="#dc2626"/>
+    <circle cx="55" cy="100" r="6" fill="#2563eb"/>
+    <circle cx="75" cy="100" r="6" fill="#16a34a"/>
+  </g>
+
+  <text x="30" y="475" font-family="system-ui, sans-serif" font-size="11" font-weight="700" letter-spacing="1.5" fill="#94a3b8">APUTURE ELECTRO STORM CS15 · 1500W POINT SOURCE RGB COLOR ENGINE</text>
+</svg>
+

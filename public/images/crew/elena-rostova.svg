@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="100%" height="100%">
+  <defs>
+    <linearGradient id="crewBg1" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <radialGradient id="lightAputure" cx="80%" cy="30%" r="40%">
+      <stop offset="0%" stop-color="#fef08a" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#0f172a" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="400" height="400" fill="url(#crewBg1)"/>
+  <!-- Ambient on-set warm studio light fixture glow behind -->
+  <circle cx="320" cy="120" r="140" fill="url(#lightAputure)"/>
+
+  <!-- Lighting equipment in background (C-stand, reflector) -->
+  <line x1="330" y1="30" x2="330" y2="280" stroke="#475569" stroke-width="4"/>
+  <circle cx="330" cy="80" r="18" fill="#334155" stroke="#fef08a" stroke-width="2"/>
+
+  <!-- Professional Figure: Elena Rostova (Gaffer) -->
+  <!-- Shoulders & Dark Technical Crew Jacket -->
+  <path d="M 60,400 L 90,260 L 160,225 L 240,225 L 310,260 L 340,400 Z" fill="#090d16" stroke="#334155" stroke-width="2"/>
+  <!-- Collar & Radio / Comms Mic Clip -->
+  <polygon points="160,225 200,265 240,225 215,225 200,245 185,225" fill="#1e293b"/>
+  <rect x="135" y="240" width="12" height="24" rx="2" fill="#020617" stroke="#64748b" stroke-width="1"/>
+  <line x1="141" y1="230" x2="141" y2="240" stroke="#94a3b8" stroke-width="1.5"/>
+
+  <!-- Neck -->
+  <rect x="180" y="175" width="40" height="55" fill="#e0a98b"/>
+
+  <!-- Head & Facial Features -->
+  <ellipse cx="200" cy="140" rx="42" ry="52" fill="#f0be9f"/>
+  <!-- Hair (Dark pulled back hair) -->
+  <path d="M 152,145 C 150,90 250,90 248,145 C 248,110 230,95 200,95 C 170,95 152,110 152,145 Z" fill="#18181b"/>
+  <path d="M 155,120 Q 200,105 245,120 Q 248,80 200,80 Q 152,80 155,120 Z" fill="#18181b"/>
+
+  <!-- Subtle Eyes, Brows, Nose, Smile -->
+  <ellipse cx="185" cy="138" rx="4" ry="2.5" fill="#27272a"/>
+  <ellipse cx="215" cy="138" rx="4" ry="2.5" fill="#27272a"/>
+  <line x1="178" y1="130" x2="192" y2="131" stroke="#27272a" stroke-width="2"/>
+  <line x1="208" y1="131" x2="222" y2="130" stroke="#27272a" stroke-width="2"/>
+  <path d="M 200,142 L 198,154 L 204,154" stroke="#d49574" stroke-width="2" fill="none"/>
+  <path d="M 190,165 Q 200,172 210,165" stroke="#9f1239" stroke-width="2.5" fill="none"/>
+
+  <!-- Production Light Meter / Sekonic around neck -->
+  <rect x="188" y="275" width="24" height="40" rx="3" fill="#0f172a" stroke="#64748b" stroke-width="1.5"/>
+  <circle cx="200" cy="285" r="5" fill="#ffffff"/>
+  <rect x="193" y="295" width="14" height="12" fill="#38bdf8" opacity="0.8"/>
+  <path d="M 175,235 Q 200,275 200,275 Q 200,275 225,235" stroke="#475569" stroke-width="2" fill="none"/>
+</svg>
+

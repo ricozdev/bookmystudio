@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="100%" height="100%">
+  <defs>
+    <linearGradient id="gripStudioBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </linearGradient>
+    <linearGradient id="chromeHydraulic" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f8fafc"/>
+      <stop offset="50%" stop-color="#94a3b8"/>
+      <stop offset="100%" stop-color="#64748b"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="800" height="500" fill="url(#gripStudioBg)"/>
+
+  <!-- Straight Track Rail Rails on Ground -->
+  <line x1="80" y1="410" x2="720" y2="410" stroke="#64748b" stroke-width="8"/>
+  <line x1="80" y1="440" x2="720" y2="440" stroke="#64748b" stroke-width="8"/>
+  <!-- Track Wooden Crossties -->
+  <g stroke="#78350f" stroke-width="12">
+    <line x1="140" y1="400" x2="140" y2="450"/>
+    <line x1="240" y1="400" x2="240" y2="450"/>
+    <line x1="340" y1="400" x2="340" y2="450"/>
+    <line x1="440" y1="400" x2="440" y2="450"/>
+    <line x1="540" y1="400" x2="540" y2="450"/>
+    <line x1="640" y1="400" x2="640" y2="450"/>
+  </g>
+
+  <!-- J.L. Fisher Model 10 Dolly Body in Center -->
+  <g transform="translate(240, 150)">
+    <!-- Chassis Deck (Fisher Blue/Dark Grey) -->
+    <rect x="0" y="160" width="320" height="70" rx="8" fill="#1e293b" stroke="#334155" stroke-width="3"/>
+    <line x1="15" y1="180" x2="305" y2="180" stroke="#475569" stroke-width="2"/>
+    <line x1="15" y1="200" x2="305" y2="200" stroke="#475569" stroke-width="2"/>
+
+    <!-- 4 Track Wheels Riding on Rails -->
+    <circle cx="50" cy="245" r="24" fill="#0f172a" stroke="#64748b" stroke-width="3"/>
+    <circle cx="50" cy="245" r="8" fill="#38bdf8"/>
+    <circle cx="270" cy="245" r="24" fill="#0f172a" stroke="#64748b" stroke-width="3"/>
+    <circle cx="270" cy="245" r="8" fill="#38bdf8"/>
+
+    <!-- Hydraulic Center Boom Lift Arm -->
+    <polygon points="120,160 180,40 220,40 180,160" fill="url(#chromeHydraulic)" stroke="#334155" stroke-width="2"/>
+    
+    <!-- Heavy Duty Leveling Mitchell Mount Base at Top -->
+    <rect x="160" y="25" width="80" height="20" rx="4" fill="#090d16" stroke="#64748b" stroke-width="2"/>
+    <circle cx="200" cy="35" r="5" fill="#f59e0b"/>
+
+    <!-- Operator Seat Arm & Round Swivel Seat -->
+    <path d="M 120,160 L 60,110 L 60,90" stroke="#475569" stroke-width="8" stroke-linecap="round" fill="none"/>
+    <ellipse cx="60" cy="85" rx="35" ry="12" fill="#0f172a" stroke="#334155" stroke-width="2"/>
+
+    <!-- Grip Push Bar Handle at Rear -->
+    <path d="M 300,160 L 340,90 L 370,90" stroke="#64748b" stroke-width="6" stroke-linecap="round" fill="none"/>
+    <rect x="360" y="80" width="12" height="20" rx="2" fill="#ef4444"/>
+  </g>
+
+  <text x="30" y="475" font-family="system-ui, sans-serif" font-size="11" font-weight="700" letter-spacing="1.5" fill="#94a3b8">J.L. FISHER MODEL 10 HYDRAULIC CAMERA DOLLY WITH TRACK WHEELS</text>
+</svg>
+

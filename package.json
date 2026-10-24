@@ -1,0 +1,42 @@
+{
+  "name": "bookmystudio",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "server:dev": "pnpm --filter bookmystudio-server dev",
+    "server:build": "pnpm --filter bookmystudio-server build",
+    "server:start": "pnpm --filter bookmystudio-server start",
+    "server:seed": "pnpm --filter bookmystudio-server seed",
+    "server:test": "pnpm --filter bookmystudio-server test",
+    "server:verify-smtp": "pnpm --filter bookmystudio-server verify-smtp",
+    "admin:reset-password": "pnpm --filter bookmystudio-server admin:reset-password",
+    "build:backend": "pnpm --filter bookmystudio-server build",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "publish-packages": "changeset git-tag && git push --tags"
+  },
+  "dependencies": {
+    "libphonenumber-js": "^1.13.15",
+    "motion": "^14.4.0",
+    "next": "16.4.2",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@changesets/changelog-github": "^1.0.1",
+    "@changesets/cli": "^3.0.3",
+    "@tailwindcss/turbopack": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.4.2",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  },
+  "packageManager": "pnpm@10.26.0"
+}

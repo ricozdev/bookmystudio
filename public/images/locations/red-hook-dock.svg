@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="100%" height="100%">
+  <defs>
+    <linearGradient id="pierSky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="60%" stop-color="#bae6fd"/>
+      <stop offset="100%" stop-color="#e0f2fe"/>
+    </linearGradient>
+    <linearGradient id="harborSea" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0284c7"/>
+      <stop offset="100%" stop-color="#0369a1"/>
+    </linearGradient>
+    <linearGradient id="dockConcrete" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#475569"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="800" height="500" fill="url(#pierSky)"/>
+
+  <!-- Open Harbor Water -->
+  <rect x="0" y="210" width="800" height="90" fill="url(#harborSea)"/>
+
+  <!-- Distant Pier Cranes Silhouettes -->
+  <g stroke="#0f172a" stroke-width="2" fill="none" opacity="0.7">
+    <path d="M 120,210 L 140,110 L 210,110 L 250,70 L 140,110"/>
+    <line x1="140" y1="110" x2="160" y2="210"/>
+    <line x1="180" y1="110" x2="180" y2="210"/>
+    
+    <path d="M 520,210 L 540,100 L 610,100 L 660,60 L 540,100"/>
+    <line x1="540" y1="100" x2="560" y2="210"/>
+    <line x1="580" y1="100" x2="580" y2="210"/>
+  </g>
+
+  <!-- Industrial Shipping Containers Stacked on Left Pier -->
+  <g transform="translate(60, 160)">
+    <!-- Red Container -->
+    <rect x="0" y="40" width="130" height="50" rx="2" fill="#b91c1c" stroke="#7f1d1d" stroke-width="2"/>
+    <line x1="30" y1="40" x2="30" y2="90" stroke="#7f1d1d" stroke-width="2"/>
+    <line x1="60" y1="40" x2="60" y2="90" stroke="#7f1d1d" stroke-width="2"/>
+    <line x1="90" y1="40" x2="90" y2="90" stroke="#7f1d1d" stroke-width="2"/>
+    <!-- Blue Container on top -->
+    <rect x="15" y="-10" width="120" height="50" rx="2" fill="#1d4ed8" stroke="#1e3a8a" stroke-width="2"/>
+    <line x1="45" y1="-10" x2="45" y2="40" stroke="#1e3a8a" stroke-width="2"/>
+    <line x1="75" y1="-10" x2="75" y2="40" stroke="#1e3a8a" stroke-width="2"/>
+    <line x1="105" y1="-10" x2="105" y2="40" stroke="#1e3a8a" stroke-width="2"/>
+  </g>
+
+  <!-- Heavy Asphalt / Concrete Loading Pier Foreground -->
+  <polygon points="0,290 800,290 800,500 0,500" fill="url(#dockConcrete)"/>
+  
+  <!-- Pier Edge Heavy Timber Bollards -->
+  <g transform="translate(340, 260)">
+    <rect x="0" y="10" width="22" height="25" rx="3" fill="#020617"/>
+    <ellipse cx="11" cy="10" rx="11" ry="4" fill="#334155"/>
+  </g>
+  <g transform="translate(680, 260)">
+    <rect x="0" y="10" width="22" height="25" rx="3" fill="#020617"/>
+    <ellipse cx="11" cy="10" rx="11" ry="4" fill="#334155"/>
+  </g>
+
+  <!-- Camera Dolly Tracks on Pier Deck -->
+  <line x1="280" y1="360" x2="620" y2="360" stroke="#94a3b8" stroke-width="3"/>
+  <line x1="280" y1="380" x2="620" y2="380" stroke="#94a3b8" stroke-width="3"/>
+  <line x1="320" y1="355" x2="320" y2="385" stroke="#64748b" stroke-width="2"/>
+  <line x1="420" y1="355" x2="420" y2="385" stroke="#64748b" stroke-width="2"/>
+  <line x1="520" y1="355" x2="520" y2="385" stroke="#64748b" stroke-width="2"/>
+
+  <text x="30" y="475" font-family="system-ui, sans-serif" font-size="11" font-weight="700" letter-spacing="1.5" fill="#e2e8f0">RED HOOK WATERFRONT · 14,000 SQ FT OPEN PIER TERMINAL · UNRESTRICTED VEHICLE DOCK</text>
+</svg>
+

@@ -1,0 +1,21 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.authRouter = void 0;
+const express_1 = require("express");
+const auth_controller_1 = require("../controllers/auth.controller");
+const auth_middleware_1 = require("../middleware/auth.middleware");
+const validate_middleware_1 = require("../middleware/validate.middleware");
+const rate_limit_middleware_1 = require("../middleware/rate-limit.middleware");
+const auth_validator_1 = require("../validators/auth.validator");
+exports.authRouter = (0, express_1.Router)();
+exports.authRouter.post('/register', rate_limit_middleware_1.authLimiter, (0, validate_middleware_1.validateBody)(auth_validator_1.registerSchema), auth_controller_1.register);
+exports.authRouter.post('/login', rate_limit_middleware_1.authLimiter, (0, validate_middleware_1.validateBody)(auth_validator_1.loginSchema), auth_controller_1.login);
+exports.authRouter.post('/logout', auth_middleware_1.requireAuth, auth_controller_1.logout);
+exports.authRouter.get('/me', auth_middleware_1.requireAuth, auth_controller_1.getCurrentUser);
+exports.authRouter.post('/verify-email', rate_limit_middleware_1.authLimiter, (0, validate_middleware_1.validateBody)(auth_validator_1.verifyEmailSchema), auth_controller_1.verifyEmail);
+exports.authRouter.post('/resend-verification', rate_limit_middleware_1.otpResendLimiter, (0, validate_middleware_1.validateBody)(auth_validator_1.resendVerificationSchema), auth_controller_1.resendVerification);
+exports.authRouter.post('/forgot-password', rate_limit_middleware_1.authLimiter, (0, validate_middleware_1.validateBody)(auth_validator_1.forgotPasswordSchema), auth_controller_1.forgotPassword);
+exports.authRouter.post('/reset-password', rate_limit_middleware_1.authLimiter, (0, validate_middleware_1.validateBody)(auth_validator_1.resetPasswordSchema), auth_controller_1.resetPassword);
+exports.authRouter.patch('/profile', auth_middleware_1.requireAuth, (0, validate_middleware_1.validateBody)(auth_validator_1.updateProfileSchema), auth_controller_1.updateProfile);
+exports.authRouter.post('/become-vendor', auth_middleware_1.requireAuth, (0, validate_middleware_1.validateBody)(auth_validator_1.becomeVendorSchema), auth_controller_1.becomeVendor);
+//# sourceMappingURL=auth.routes.js.map
