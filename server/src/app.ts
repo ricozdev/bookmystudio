@@ -5,6 +5,7 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import helmet from 'helmet';
 import { env } from './config/env';
+import { createCorsOptions } from './config/cors';
 import { emailService } from './services/email.service';
 import { errorHandler } from './middleware/error.middleware';
 import { optionalAuth } from './middleware/auth.middleware';
@@ -23,7 +24,7 @@ import locationGeocodeRouter from './routes/location-geocode.routes';
 import { availabilityRouter } from './routes/availability.routes';
 import { phoneVerificationRouter } from './routes/phone-verification.routes';
 
-export function createApp(): Express {
+export function createApp(options?: { allowedOrigins?: string[] }): Express {
   const app = express();
 
   // Trust proxy for secure cookies behind reverse proxy (e.g. Vercel, Nginx)
@@ -39,23 +40,9 @@ export function createApp(): Express {
     })
   );
 
-  // Strict CORS Configuration
-  const allowedOrigins = [env.CLIENT_ORIGIN, 'http://localhost:3000', 'http://127.0.0.1:3000'];
-  app.use(
-    cors({
-      origin: (origin, callback) => {
-        // Allow requests with no origin (e.g., mobile apps, curl, server-to-server)
-        if (!origin) return callback(null, true);
-        if (allowedOrigins.includes(origin) || env.NODE_ENV === 'development') {
-          return callback(null, true);
-        }
-        callback(new Error(`CORS blocked request from origin: ${origin}`));
-      },
-      credentials: true,
-      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-    })
-  );
+  // Strict CORS Configuration with comma-separated CLIENT_ORIGIN support
+  const corsOptions = createCorsOptions(options?.allowedOrigins);
+  app.use(cors(corsOptions));
 
   // Body Parsing
   app.use(express.json({ limit: '10mb' }));

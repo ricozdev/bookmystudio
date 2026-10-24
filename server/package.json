@@ -12,6 +12,7 @@
     "admin:provision": "tsx src/utils/provision-admin.ts",
     "admin:reset-password": "tsx src/utils/reset-admin-password.ts",
     "test": "NODE_ENV=test tsx tests/runner.ts",
+    "test:cors": "NODE_ENV=test tsx tests/cors.test.ts",
     "verify-smtp": "tsx src/utils/verify-smtp.ts"
   },
   "dependencies": {
