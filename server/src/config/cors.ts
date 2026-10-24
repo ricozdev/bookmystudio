@@ -47,7 +47,13 @@ export function createCorsOptions(origins?: string[]): cors.CorsOptions {
 
       const normalizedOrigin = origin.trim().replace(/\/+$/, '');
 
-      if (allowedOrigins.includes(normalizedOrigin)) {
+      if (
+        allowedOrigins.includes(normalizedOrigin) ||
+        /^https:\/\/bookmystudio.*\.vercel\.app$/.test(normalizedOrigin) ||
+        /^https:\/\/.*-sairaghuveer85-cpus-projects\.vercel\.app$/.test(normalizedOrigin) ||
+        /^https:\/\/([a-zA-Z0-9-]+\.)*ricoz\.in$/.test(normalizedOrigin) ||
+        (env.NODE_ENV === 'development')
+      ) {
         return callback(null, true);
       }
 
@@ -56,7 +62,14 @@ export function createCorsOptions(origins?: string[]): cors.CorsOptions {
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Requested-With',
+      'Accept',
+      'Origin',
+      'x-request-id',
+    ],
     optionsSuccessStatus: 204,
   };
 }

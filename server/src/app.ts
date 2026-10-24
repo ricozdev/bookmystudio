@@ -43,6 +43,7 @@ export function createApp(options?: { allowedOrigins?: string[] }): Express {
   // Strict CORS Configuration with comma-separated CLIENT_ORIGIN support
   const corsOptions = createCorsOptions(options?.allowedOrigins);
   app.use(cors(corsOptions));
+  app.options('*', cors(corsOptions));
 
   // Body Parsing
   app.use(express.json({ limit: '10mb' }));
