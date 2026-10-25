@@ -45,8 +45,15 @@ export function createApp(options?: { allowedOrigins?: string[] }): Express {
   app.use(cors(corsOptions));
   app.options('*', cors(corsOptions));
 
-  // Body Parsing
-  app.use(express.json({ limit: '10mb' }));
+  // Body Parsing (with rawBody capture for webhook HMAC verification)
+  app.use(
+    express.json({
+      limit: '10mb',
+      verify: (req: any, _res, buf) => {
+        req.rawBody = buf;
+      },
+    })
+  );
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
   // Persistent MongoDB Session Store

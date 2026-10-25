@@ -6,6 +6,8 @@ import {
   EquipmentItem,
   DateAvailabilityResponse,
   BookingQuoteResponse,
+  CheckoutOrderData,
+  PaymentVerificationPayload,
 } from '../types';
 
 export interface PaginatedResponse<T> {
@@ -395,6 +397,23 @@ export const marketplaceApi = {
 
   createBooking: async (payload: BookingPayload): Promise<SingleResponse<Record<string, unknown>>> => {
     return apiClient.post<SingleResponse<Record<string, unknown>>>('/booking-requests', payload);
+  },
+
+  createCheckoutOrder: async (payload: BookingPayload): Promise<SingleResponse<CheckoutOrderData>> => {
+    return apiClient.post<SingleResponse<CheckoutOrderData>>('/booking-requests/checkout-order', payload);
+  },
+
+  verifyPayment: async (payload: PaymentVerificationPayload): Promise<SingleResponse<Record<string, unknown>>> => {
+    return apiClient.post<SingleResponse<Record<string, unknown>>>('/booking-requests/verify-payment', payload);
+  },
+
+  reportPaymentFailure: async (payload: {
+    bookingId: string;
+    razorpay_order_id?: string;
+    reason?: string;
+    error?: Record<string, unknown> | null;
+  }): Promise<SingleResponse<Record<string, unknown>>> => {
+    return apiClient.post<SingleResponse<Record<string, unknown>>>('/booking-requests/payment-failed', payload);
   },
 
   getBookings: async (params?: {
