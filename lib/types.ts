@@ -293,8 +293,39 @@ export interface BookingRecord {
   pricingBreakdown?: BookingPricingBreakdown;
   specialInstructions?: string;
   status: 'pending' | 'reviewed' | 'confirmed' | 'declined' | 'cancelled';
+  paymentStatus?: 'unpaid' | 'pending' | 'paid' | 'failed';
+  razorpayOrderId?: string | null;
+  razorpayPaymentId?: string | null;
+  paidAt?: string | null;
+  paymentAmount?: number | null;
+  currency?: string;
   holdExpiresAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
+
+export interface CheckoutOrderData {
+  bookingId: string;
+  orderId: string;
+  amount: number; // In smallest currency subunit (paise for INR)
+  currency: string;
+  keyId: string;
+  holdExpiresAt: string;
+  estimatedTotal: number;
+  pricingBreakdown: BookingPricingBreakdown;
+  listingTitle: string;
+  customer: {
+    fullName: string;
+    email: string;
+    phone: string;
+  };
+}
+
+export interface PaymentVerificationPayload {
+  bookingId: string;
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+}
+
 

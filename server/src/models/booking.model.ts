@@ -1,6 +1,7 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 export type BookingStatus = 'pending' | 'reviewed' | 'confirmed' | 'declined' | 'cancelled';
+export type PaymentStatus = 'unpaid' | 'pending' | 'paid' | 'failed';
 export type ListingType = 'studio' | 'location' | 'equipment' | 'crew';
 
 export interface IBookingPricingBreakdown {
@@ -40,6 +41,13 @@ export interface IBookingRequest extends Document {
   pricingBreakdown?: IBookingPricingBreakdown;
   specialInstructions?: string;
   status: BookingStatus;
+  paymentStatus: PaymentStatus;
+  razorpayOrderId?: string | null;
+  razorpayPaymentId?: string | null;
+  razorpaySignature?: string | null;
+  paidAt?: Date | null;
+  paymentAmount?: number | null;
+  currency?: string;
   holdExpiresAt?: Date | null;
   createdAt: Date;
   updatedAt: Date;
@@ -167,6 +175,40 @@ const bookingRequestSchema = new Schema<IBookingRequest>(
       enum: ['pending', 'reviewed', 'confirmed', 'declined', 'cancelled'],
       default: 'pending',
       index: true,
+    },
+    paymentStatus: {
+      type: String,
+      enum: ['unpaid', 'pending', 'paid', 'failed'],
+      default: 'unpaid',
+      index: true,
+    },
+    razorpayOrderId: {
+      type: String,
+      default: null,
+      index: true,
+      trim: true,
+    },
+    razorpayPaymentId: {
+      type: String,
+      default: null,
+      index: true,
+      trim: true,
+    },
+    razorpaySignature: {
+      type: String,
+      default: null,
+    },
+    paidAt: {
+      type: Date,
+      default: null,
+    },
+    paymentAmount: {
+      type: Number,
+      default: null,
+    },
+    currency: {
+      type: String,
+      default: 'INR',
     },
     holdExpiresAt: {
       type: Date,

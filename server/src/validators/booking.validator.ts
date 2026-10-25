@@ -32,3 +32,19 @@ export const createBookingSchema = z
 export const updateBookingStatusSchema = z.object({
   status: z.enum(['pending', 'reviewed', 'confirmed', 'declined', 'cancelled']),
 });
+
+export const createCheckoutOrderSchema = createBookingSchema;
+
+export const verifyPaymentSchema = z.object({
+  bookingId: z.string().trim().min(1, 'Booking ID is required'),
+  razorpay_order_id: z.string().trim().min(1, 'Razorpay order ID is required'),
+  razorpay_payment_id: z.string().trim().min(1, 'Razorpay payment ID is required'),
+  razorpay_signature: z.string().trim().min(1, 'Razorpay signature is required'),
+});
+
+export const reportPaymentFailureSchema = z.object({
+  bookingId: z.string().trim().min(1, 'Booking ID is required'),
+  razorpay_order_id: z.string().trim().optional(),
+  error: z.record(z.any()).optional(),
+  reason: z.string().trim().optional(),
+});

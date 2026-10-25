@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { marketplaceApi, BookingPayload } from '@/lib/api/marketplace';
-import { BookingQuoteResponse, BookingPricingBreakdown } from '@/lib/types';
+import { BookingQuoteResponse, BookingPricingBreakdown, CheckoutOrderData } from '@/lib/types';
 import {
   ShieldCheckIcon,
   ClockIcon,
@@ -15,6 +15,21 @@ import {
   MapPinIcon,
   ShieldPolicyIcon,
 } from '@/components/ui/Icons';
+
+interface RazorpayInstance {
+  open: () => void;
+  on: (event: string, handler: (resp: Record<string, unknown>) => void) => void;
+}
+
+interface RazorpayConstructor {
+  new (options: Record<string, unknown>): RazorpayInstance;
+}
+
+declare global {
+  interface Window {
+    Razorpay?: RazorpayConstructor;
+  }
+}
 
 interface PendingBookingState {
   category: 'studio' | 'location' | 'crew' | 'equipment';
@@ -57,8 +72,11 @@ function CheckoutContent() {
   const [quote, setQuote] = useState<BookingQuoteResponse | null>(null);
   const [isQuoting, setIsQuoting] = useState(false);
 
-  // Submission State
+  // Razorpay Checkout & Payment State
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isVerifyingPayment, setIsVerifyingPayment] = useState(false);
+  const [activeOrder, setActiveOrder] = useState<CheckoutOrderData | null>(null);
+  const [holdNotice, setHoldNotice] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [conflictOccurred, setConflictOccurred] = useState(false);
   const [confirmedBooking, setConfirmedBooking] = useState<Record<string, unknown> | null>(null);
@@ -78,6 +96,20 @@ function CheckoutContent() {
     const secs = holdSecondsRemaining % 60;
     return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   }, [holdSecondsRemaining]);
+
+  // Load Razorpay Standard Checkout SDK
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (window.Razorpay) return;
+
+    if (!document.getElementById('razorpay-checkout-script')) {
+      const script = document.createElement('script');
+      script.id = 'razorpay-checkout-script';
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.async = true;
+      document.body.appendChild(script);
+    }
+  }, []);
 
   // Read params on client mount
   useEffect(() => {
@@ -116,7 +148,7 @@ function CheckoutContent() {
         powerAddon: queryPower,
         riggingAddon: queryRig,
         attendeesCount: saved?.attendeesCount || 12,
-        estimatedTotal: saved?.estimatedTotal || 1800,
+        estimatedTotal: saved?.estimatedTotal || 1200,
         pricingBreakdown: saved?.pricingBreakdown,
       };
 
@@ -190,10 +222,131 @@ function CheckoutContent() {
     return `${to12h(startStr)} – ${to12h(endStr)}`;
   };
 
-  // Submit Booking Form Handler
+  // Launch Razorpay Standard Checkout
+  const launchRazorpayModal = (orderData: CheckoutOrderData) => {
+    if (typeof window === 'undefined' || !window.Razorpay) {
+      setErrorMessage('Razorpay payment gateway is initializing. Please wait a moment and click Pay again.');
+      setIsSubmitting(false);
+      return;
+    }
+
+    setActiveOrder(orderData);
+    setHoldNotice(null);
+
+    const options = {
+      key: orderData.keyId || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_Ts7WT70m70q3Pf',
+      amount: orderData.amount, // in paise
+      currency: orderData.currency || 'INR',
+      name: 'BookMyStudio',
+      description: `Studio Reservation: ${bookingState?.title || 'Production Soundstage'}`,
+      image: '/images/bookmystudio-mark.png',
+      order_id: orderData.orderId,
+      prefill: {
+        name: producerName || orderData.customer?.fullName || '',
+        email: contactEmail || orderData.customer?.email || '',
+        contact: contactPhone || orderData.customer?.phone || '',
+      },
+      notes: {
+        bookingId: orderData.bookingId,
+        listingCategory: bookingState?.category || 'studio',
+      },
+      theme: {
+        color: '#09090b', // Studio obsidian/dark theme accent
+      },
+      modal: {
+        backdropclose: false,
+        escape: true,
+        ondismiss: () => {
+          setIsSubmitting(false);
+          setIsVerifyingPayment(false);
+          setHoldNotice(
+            'Payment window was closed. Your 15-minute slot hold is still reserved! You can click "Book & Pay" to retry.'
+          );
+          marketplaceApi
+            .reportPaymentFailure({
+              bookingId: orderData.bookingId,
+              razorpay_order_id: orderData.orderId,
+              reason: 'Checkout window closed by customer before payment',
+            })
+            .catch(() => {});
+        },
+      },
+      handler: async (response: {
+        razorpay_order_id: string;
+        razorpay_payment_id: string;
+        razorpay_signature: string;
+      }) => {
+        setIsVerifyingPayment(true);
+        setErrorMessage(null);
+        setHoldNotice(null);
+
+        try {
+          const verifyRes = await marketplaceApi.verifyPayment({
+            bookingId: orderData.bookingId,
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+          });
+
+          if (verifyRes.success && verifyRes.data) {
+            setConfirmedBooking(verifyRes.data);
+            try {
+              sessionStorage.removeItem('bms_pending_booking');
+            } catch {}
+          } else {
+            setErrorMessage(verifyRes.error || 'Payment signature verification failed. Please contact support.');
+          }
+        } catch (err: unknown) {
+          const errObj = err as { message?: string };
+          setErrorMessage(errObj.message || 'Payment verification encountered an unexpected error.');
+        } finally {
+          setIsVerifyingPayment(false);
+          setIsSubmitting(false);
+        }
+      },
+    };
+
+    try {
+      const rzpInstance = new window.Razorpay(options);
+      rzpInstance.on('payment.failed', (failResp: Record<string, unknown>) => {
+        setIsSubmitting(false);
+        setIsVerifyingPayment(false);
+        const failError = failResp?.error as { description?: string; reason?: string } | undefined;
+        const reason =
+          failError?.description ||
+          failError?.reason ||
+          'Payment was declined or cancelled by the issuing bank.';
+        setErrorMessage(`Payment declined: ${reason}`);
+        setHoldNotice('Your 15-minute priority hold remains active. You can retry with another test card or UPI.');
+
+        marketplaceApi
+          .reportPaymentFailure({
+            bookingId: orderData.bookingId,
+            razorpay_order_id: orderData.orderId,
+            reason,
+            error: (failResp?.error as Record<string, unknown>) || null,
+          })
+          .catch(() => {});
+      });
+
+      rzpInstance.open();
+    } catch (err: unknown) {
+      console.error('Failed to open Razorpay Checkout:', err);
+      setErrorMessage('Could not launch payment checkout modal. Please check your browser connection.');
+      setIsSubmitting(false);
+    }
+  };
+
+  // Submit Booking & Initiate Razorpay Payment Flow
   const handleSubmitBooking = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!bookingState) return;
+
+    if (!user) {
+      setErrorMessage('Please log in to your BookMyStudio account to reserve this stage.');
+      router.push(`/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+      return;
+    }
 
     if (!productionName.trim()) {
       setErrorMessage('Please provide your Production / Agency name.');
@@ -227,6 +380,7 @@ function CheckoutContent() {
 
     setIsSubmitting(true);
     setErrorMessage(null);
+    setHoldNotice(null);
     setConflictOccurred(false);
 
     try {
@@ -256,18 +410,18 @@ function CheckoutContent() {
         payload.crewId = bookingState.listingId;
       }
 
-      const res = await marketplaceApi.createBooking(payload);
+      // Step 1: Create pending booking & Razorpay order through backend
+      const res = await marketplaceApi.createCheckoutOrder(payload);
 
       if (res.success && res.data) {
-        setConfirmedBooking(res.data);
-        // Clear pending booking from storage
-        try {
-          sessionStorage.removeItem('bms_pending_booking');
-        } catch {}
+        // Step 2: Open Razorpay Checkout modal with the backend-created order
+        launchRazorpayModal(res.data);
       } else {
-        setErrorMessage(res.error || 'Failed to submit reservation hold.');
+        setErrorMessage(res.error || 'Failed to initialize payment checkout.');
+        setIsSubmitting(false);
       }
     } catch (err: unknown) {
+      setIsSubmitting(false);
       const errObj = err as { status?: number; response?: { status?: number }; message?: string };
       const status = errObj.status || errObj.response?.status;
       if (status === 409 || errObj.message?.includes('conflict') || errObj.message?.includes('already booked')) {
@@ -278,14 +432,15 @@ function CheckoutContent() {
       } else {
         setErrorMessage(errObj.message || 'An unexpected error occurred while placing your stage hold.');
       }
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
-  // If confirmed, show Confirmation Screen
+  // If confirmed, show Verified Payment & Booking Confirmation Screen
   if (confirmedBooking) {
-    const bookingId = String(confirmedBooking.id || confirmedBooking._id || 'BMS-STAGE-HOLD');
+    const bookingId = String(confirmedBooking.id || confirmedBooking._id || 'BMS-STAGE-CONFIRMED');
+    const paymentId = String(confirmedBooking.razorpayPaymentId || 'pay_test_verified');
+    const totalPaid = Number(confirmedBooking.paymentAmount || confirmedBooking.estimatedTotal || quote?.estimatedTotal || 0);
+
     return (
       <main className="min-h-screen bg-[var(--bg-page)] text-zinc-900 dark:text-zinc-100 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-2xl mx-auto space-y-8 animate-in fade-in duration-300">
@@ -299,21 +454,25 @@ function CheckoutContent() {
 
             <div className="space-y-2">
               <span className="text-[11px] font-mono uppercase tracking-widest text-emerald-700 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 px-3 py-1 rounded-full">
-                15-Minute Priority Hold Secured
+                Payment Verified • Soundstage Confirmed
               </span>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
-                Stage Reservation Hold Dispatched
+                Reservation Confirmed & Paid
               </h1>
               <p className="text-sm text-zinc-600 dark:text-zinc-400 max-w-md mx-auto leading-relaxed">
-                Your production hold for <span className="text-zinc-900 dark:text-white font-semibold">{bookingState?.title}</span> has been registered with the stage facilities engineer.
+                Your soundstage booking for <span className="text-zinc-900 dark:text-white font-semibold">{bookingState?.title}</span> has been paid and confirmed.
               </p>
             </div>
 
-            {/* Reference Badge */}
+            {/* Reference Badge & Transaction Receipt */}
             <div className="p-4 bg-zinc-50 dark:bg-zinc-900/90 rounded-2xl border border-zinc-200 dark:border-zinc-800 text-left space-y-3 font-mono text-xs">
               <div className="flex items-center justify-between pb-2 border-b border-zinc-200 dark:border-zinc-800">
-                <span className="text-zinc-500">Hold Reference:</span>
+                <span className="text-zinc-500">Booking Reference:</span>
                 <span className="text-amber-600 dark:text-amber-400 font-bold text-sm">#{bookingId}</span>
+              </div>
+              <div className="flex items-center justify-between pb-2 border-b border-zinc-200 dark:border-zinc-800">
+                <span className="text-zinc-500">Razorpay Payment ID:</span>
+                <span className="text-emerald-600 dark:text-emerald-400 font-bold text-xs">{paymentId}</span>
               </div>
               <div className="flex items-center justify-between pb-2 border-b border-zinc-200 dark:border-zinc-800">
                 <span className="text-zinc-500">Scheduled Date:</span>
@@ -325,24 +484,28 @@ function CheckoutContent() {
                   {formatTimeWindow(bookingState?.startTime || '09:00', quote?.endTime || bookingState?.endTime)} ({bookingState?.durationHours}h)
                 </span>
               </div>
+              <div className="flex items-center justify-between pb-2 border-b border-zinc-200 dark:border-zinc-800">
+                <span className="text-zinc-500">Payment Status:</span>
+                <span className="text-emerald-600 dark:text-emerald-400 font-bold uppercase">PAID (Razorpay Test Mode)</span>
+              </div>
               <div className="flex items-center justify-between">
-                <span className="text-zinc-500">Authoritative Total:</span>
-                <span className="text-emerald-600 dark:text-emerald-400 font-bold text-sm">
-                  ${(quote?.estimatedTotal || bookingState?.estimatedTotal || 0).toLocaleString()}
+                <span className="text-zinc-500">Total Paid:</span>
+                <span className="text-emerald-600 dark:text-emerald-400 font-bold text-base">
+                  ₹{totalPaid.toLocaleString('en-IN')}
                 </span>
               </div>
             </div>
 
             {/* Next Steps Checklist */}
-            <div className="p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 rounded-2xl text-left space-y-2 text-xs text-zinc-700 dark:text-zinc-300">
-              <div className="font-bold text-amber-800 dark:text-amber-300 flex items-center gap-1.5">
-                <ClockIcon className="w-4 h-4 text-amber-500 dark:text-amber-400" />
+            <div className="p-4 bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/40 rounded-2xl text-left space-y-2 text-xs text-zinc-700 dark:text-zinc-300">
+              <div className="font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
+                <CheckCircleIcon className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 Next Steps for Your Production:
               </div>
               <ul className="space-y-1.5 pl-5 list-disc text-zinc-600 dark:text-zinc-400 text-[11px] leading-relaxed">
-                <li>A facility technician will review power tie-in and load-in specs within 2 business hours.</li>
+                <li>Confirmation receipt and soundstage access protocol dispatched to <strong className="text-zinc-900 dark:text-white">{contactEmail}</strong>.</li>
                 <li>Submit your Certificate of Insurance (COI) naming the stage as additional insured prior to call time.</li>
-                <li>Roll-up gate access PIN and soundstage protocol have been dispatched to <strong className="text-zinc-900 dark:text-white">{contactEmail}</strong>.</li>
+                <li>Roll-up gate access PIN and facility engineer contact details are accessible in your dashboard.</li>
               </ul>
             </div>
 
@@ -367,9 +530,24 @@ function CheckoutContent() {
     );
   }
 
+  const grandTotal = quote?.estimatedTotal || bookingState?.estimatedTotal || 0;
+
   return (
-    <main className="min-h-screen bg-[var(--bg-page)] text-zinc-900 dark:text-zinc-100 py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto space-y-8">
+    <main className="min-h-screen bg-[var(--bg-page)] text-zinc-900 dark:text-zinc-100 py-8 sm:py-12 px-4 sm:px-6 lg:px-8 relative">
+      {/* Verification Overlay */}
+      {isVerifyingPayment && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex flex-col items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#121216] border border-emerald-500/30 rounded-3xl p-8 max-w-md w-full text-center space-y-4 shadow-2xl">
+            <div className="w-14 h-14 border-4 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin mx-auto" />
+            <h3 className="text-xl font-bold text-zinc-900 dark:text-white">Verifying Razorpay Payment</h3>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
+              Cryptographically verifying payment signature with Razorpay servers and locking your permanent soundstage reservation...
+            </p>
+          </div>
+        </div>
+      )}
+
+      <div className="max-w-6xl mx-auto space-y-6">
         {/* Breadcrumb & Navigation */}
         <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
           <Link href="/" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Marketplace</Link>
@@ -379,6 +557,19 @@ function CheckoutContent() {
           </Link>
           <span>/</span>
           <span className="text-zinc-900 dark:text-zinc-200 font-semibold">Production Checkout</span>
+        </div>
+
+        {/* Razorpay Test Mode Indicator Banner */}
+        <div className="bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/30 rounded-2xl p-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-amber-900 dark:text-amber-300">
+          <div className="flex items-center gap-2.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse flex-shrink-0" />
+            <span>
+              <strong>RAZORPAY TEST MODE ACTIVE</strong> — Real payment verification is enforced. Use Razorpay test cards or UPI to simulate checkout. No real money will be charged.
+            </span>
+          </div>
+          <span className="font-mono text-[11px] bg-amber-500/20 text-amber-800 dark:text-amber-200 px-2.5 py-1 rounded-full font-bold self-end sm:self-auto">
+            TEST MODE
+          </span>
         </div>
 
         {/* Priority Hold Banner */}
@@ -392,7 +583,7 @@ function CheckoutContent() {
                 15-Minute Priority Hold Guaranteed
               </h2>
               <p className="text-xs text-zinc-600 dark:text-zinc-400">
-                This stage date and time are reserved for your checkout session. No charge is made today.
+                This stage date and time are reserved for your checkout session. Complete payment to finalize reservation.
               </p>
             </div>
           </div>
@@ -402,9 +593,28 @@ function CheckoutContent() {
           </div>
         </div>
 
+        {/* Hold Preservation Notification (if modal was closed) */}
+        {holdNotice && (
+          <div className="p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800/60 rounded-2xl text-xs text-amber-800 dark:text-amber-200 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <ClockIcon className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+              <span>{holdNotice}</span>
+            </div>
+            {activeOrder && (
+              <button
+                type="button"
+                onClick={() => launchRazorpayModal(activeOrder)}
+                className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs whitespace-nowrap transition-colors"
+              >
+                Reopen Checkout
+              </button>
+            )}
+          </div>
+        )}
+
         {/* Main Grid: Form Left (7 cols), Order Summary Right (5 cols) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Mobile Order Summary Preview Card (visible on mobile only above the form) */}
+          {/* Mobile Order Summary Preview Card */}
           <div data-testid="mobile-order-summary" aria-label="Mobile order summary preview" className="lg:hidden bg-white dark:bg-[#121216] border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 shadow-xs">
             <div className="flex gap-3 items-center">
               <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shrink-0">
@@ -427,7 +637,7 @@ function CheckoutContent() {
                     {bookingState?.requestedDate} • {bookingState?.startTime} ({bookingState?.durationHours}h)
                   </span>
                   <span className="font-extrabold text-sm text-zinc-900 dark:text-white font-mono shrink-0">
-                    ${(quote?.estimatedTotal || bookingState?.estimatedTotal || 0).toLocaleString()}
+                    ₹{grandTotal.toLocaleString('en-IN')}
                   </span>
                 </div>
               </div>
@@ -478,7 +688,7 @@ function CheckoutContent() {
                       required
                       value={productionName}
                       onChange={(e) => setProductionName(e.target.value)}
-                      placeholder="e.g. Apex Visuals LLC"
+                      placeholder="e.g. Apex Visuals Productions"
                       className="w-full bg-zinc-50 dark:bg-zinc-900/80 border border-zinc-300 dark:border-zinc-700/80 rounded-xl px-3.5 py-2.5 text-base sm:text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition-colors"
                     />
                   </div>
@@ -562,43 +772,26 @@ function CheckoutContent() {
                 </div>
               </div>
 
-              {/* 2. Facility Access & Technical Requests */}
+              {/* 2. Stage Instructions & Special Requests */}
               <div className="bg-white dark:bg-[#121216] border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 sm:p-6 space-y-4 shadow-sm">
                 <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800/80 pb-3">
                   <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-900 dark:text-white">
-                    2. Facility Load-In & Special Requests
+                    2. Load-in & Technical Notes
                   </h3>
-                  <span className="text-[10px] text-zinc-500 font-medium">Stage Logistics</span>
+                  <span className="text-[10px] text-zinc-500 font-medium">Optional</span>
                 </div>
 
-                <div className="space-y-3">
-                  <div className="flex flex-wrap gap-2 text-xs">
-                    {bookingState?.powerAddon && (
-                      <span className="px-3 py-1 rounded-full bg-amber-500/15 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 flex items-center gap-1.5 font-medium">
-                        <CheckCircleIcon className="w-3.5 h-3.5" />
-                        3-Phase Camlock Distro Included
-                      </span>
-                    )}
-                    {bookingState?.riggingAddon && (
-                      <span className="px-3 py-1 rounded-full bg-amber-500/15 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 flex items-center gap-1.5 font-medium">
-                        <CheckCircleIcon className="w-3.5 h-3.5" />
-                        Early Pre-Rigging Grid Access
-                      </span>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5">
-                      Load-in specifics, grip truck parking, or power requirements
-                    </label>
-                    <textarea
-                      rows={3}
-                      value={specialInstructions}
-                      onChange={(e) => setSpecialInstructions(e.target.value)}
-                      placeholder="e.g., 5-ton grip truck arriving at 07:30 AM, need 60A distro near south cyc wall, hazers permitted..."
-                      className="w-full bg-zinc-50 dark:bg-zinc-900/80 border border-zinc-300 dark:border-zinc-700/80 rounded-xl p-3 text-base sm:text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition-colors resize-none"
-                    />
-                  </div>
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5">
+                    Special Rigging, Vehicle Access, or Power Distribution Instructions
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={specialInstructions}
+                    onChange={(e) => setSpecialInstructions(e.target.value)}
+                    placeholder="e.g. Bringing two 5-ton grip trucks, requires roll-up bay door opening at 08:30 AM."
+                    className="w-full bg-zinc-50 dark:bg-zinc-900/80 border border-zinc-300 dark:border-zinc-700/80 rounded-xl px-3.5 py-2.5 text-base sm:text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition-colors resize-none"
+                  />
                 </div>
               </div>
 
@@ -620,7 +813,7 @@ function CheckoutContent() {
                     className="w-4 h-4 mt-0.5 rounded text-amber-500 bg-white dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700 focus:ring-amber-500/30"
                   />
                   <span className="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed">
-                    <strong className="text-zinc-900 dark:text-white">Certificate of Insurance (COI):</strong> I acknowledge that our production team will provide a standard \$1M general liability COI naming the stage facility as additional insured prior to call time.
+                    <strong className="text-zinc-900 dark:text-white">Certificate of Insurance (COI):</strong> I acknowledge that our production team will provide a standard general liability COI naming the stage facility as additional insured prior to call time.
                   </span>
                 </label>
 
@@ -640,25 +833,36 @@ function CheckoutContent() {
 
               {/* Error Notice */}
               {errorMessage && !conflictOccurred && (
-                <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/40 rounded-xl text-xs text-red-700 dark:text-red-300">
-                  {errorMessage}
+                <div className="p-3.5 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/50 rounded-xl text-xs text-red-700 dark:text-red-300 space-y-1">
+                  <div className="font-bold flex items-center gap-1.5">
+                    <svg className="w-4 h-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Payment Checkout Notice
+                  </div>
+                  <p>{errorMessage}</p>
                 </div>
               )}
 
-              {/* Submit Button */}
+              {/* Submit & Pay Button */}
               <button
                 type="submit"
-                disabled={isSubmitting || isQuoting}
+                disabled={isSubmitting || isQuoting || isVerifyingPayment}
                 className="w-full py-4 px-6 rounded-2xl bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-black font-extrabold text-base tracking-wide shadow-[0_0_24px_rgba(245,158,11,0.35)] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? (
                   <>
                     <span className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
-                    <span>Reserving Stage Window...</span>
+                    <span>Preparing Razorpay Checkout...</span>
+                  </>
+                ) : isVerifyingPayment ? (
+                  <>
+                    <span className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                    <span>Verifying Payment...</span>
                   </>
                 ) : (
                   <>
-                    <span>Submit Production Reservation</span>
+                    <span>Book & Pay ₹{grandTotal.toLocaleString('en-IN')}</span>
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                     </svg>
@@ -728,41 +932,41 @@ function CheckoutContent() {
                 <div className="flex items-center justify-between">
                   <span>Base Stage Hire ({bookingState?.durationHours}h)</span>
                   <span className="font-mono text-zinc-900 dark:text-zinc-200 font-semibold">
-                    ${quote?.pricingBreakdown?.subtotal ? quote.pricingBreakdown.subtotal.toLocaleString() : (bookingState?.estimatedTotal || 1800).toLocaleString()}
+                    ₹{(quote?.pricingBreakdown?.subtotal || bookingState?.estimatedTotal || 1200).toLocaleString('en-IN')}
                   </span>
                 </div>
 
                 {Boolean(bookingState?.powerAddon) && (
                   <div className="flex items-center justify-between">
                     <span>3-Phase Camlock Distro Tie-in</span>
-                    <span className="font-mono text-amber-600 dark:text-amber-400 font-semibold">+$350</span>
+                    <span className="font-mono text-amber-600 dark:text-amber-400 font-semibold">+₹350</span>
                   </div>
                 )}
 
                 {Boolean(bookingState?.riggingAddon) && (
                   <div className="flex items-center justify-between">
                     <span>Early Pre-Rigging Grid Access</span>
-                    <span className="font-mono text-amber-600 dark:text-amber-400 font-semibold">+$500</span>
+                    <span className="font-mono text-amber-600 dark:text-amber-400 font-semibold">+₹500</span>
                   </div>
                 )}
 
                 <div className="flex items-center justify-between">
-                  <span>Soundstage Prep & Site Handover</span>
+                  <span>Soundstage Prep & Handover</span>
                   <span className="text-emerald-700 dark:text-emerald-400 font-semibold">Included</span>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span>Platform Service Fee</span>
-                  <span className="text-zinc-600 dark:text-zinc-400 font-mono">$0</span>
+                  <span>Gateway & Platform Processing</span>
+                  <span className="text-emerald-700 dark:text-emerald-400 font-semibold">Included</span>
                 </div>
 
                 <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800 flex items-baseline justify-between">
                   <div>
                     <span className="text-sm font-bold text-zinc-900 dark:text-white block">Grand Total</span>
-                    <span className="text-[10px] text-zinc-500">Hold placed today • No card charged</span>
+                    <span className="text-[10px] text-zinc-500">Payable via Razorpay Test Mode</span>
                   </div>
                   <span className="text-2xl font-mono font-extrabold text-amber-600 dark:text-amber-400 tabular-nums">
-                    ${(quote?.estimatedTotal || bookingState?.estimatedTotal || 0).toLocaleString()}
+                    ₹{grandTotal.toLocaleString('en-IN')}
                   </span>
                 </div>
               </div>
@@ -770,7 +974,7 @@ function CheckoutContent() {
               {/* Trust Box */}
               <div className="p-3 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/40 rounded-xl text-[11px] text-emerald-800 dark:text-emerald-300 leading-relaxed flex items-center gap-2">
                 <ShieldCheckIcon className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
-                <span>Zero advance deposit required for holding. Pay after engineering walkthrough.</span>
+                <span>Secure 256-bit encrypted transaction processed via Razorpay Test Gateway.</span>
               </div>
             </div>
           </div>

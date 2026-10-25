@@ -440,6 +440,7 @@ export async function validateAndPriceBooking(
     powerAddon?: boolean;
     riggingAddon?: boolean;
     customerEmail?: string;
+    customerId?: string;
   }
 ): Promise<{
   isValid: boolean;
@@ -534,32 +535,49 @@ export async function validateAndPriceBooking(
 
   // Concurrency-safe overlap conflict check against existing bookings
   const now = new Date();
-  const overlappingBooking = await BookingRequest.findOne({
-    [refField]: listing._id,
-    requestedDate: new Date(`${requestedDateStr}T00:00:00.000Z`),
-    status: { $in: ['confirmed', 'reviewed', 'pending'] },
-    $or: [
-      { holdExpiresAt: { $gt: now } },
-      { holdExpiresAt: null },
-      { status: { $in: ['confirmed', 'reviewed'] } },
-    ],
-    $expr: {
-      $and: [
-        {
-          $lt: [
-            '$startTime',
-            endTimeStr,
-          ],
-        },
-        {
-          $gt: [
-            '$endTime',
-            options.startTime,
-          ],
-        },
+  const overlapConditions: any[] = [
+    { [refField]: listing._id },
+    { requestedDate: new Date(`${requestedDateStr}T00:00:00.000Z`) },
+    { status: { $in: ['confirmed', 'reviewed', 'pending'] } },
+    {
+      $or: [
+        { holdExpiresAt: { $gt: now } },
+        { holdExpiresAt: null },
+        { status: { $in: ['confirmed', 'reviewed'] } },
       ],
     },
-  });
+    {
+      $expr: {
+        $and: [
+          {
+            $lt: [
+              '$startTime',
+              endTimeStr,
+            ],
+          },
+          {
+            $gt: [
+              '$endTime',
+              options.startTime,
+            ],
+          },
+        ],
+      },
+    },
+  ];
+
+  if (options.customerId && mongoose.Types.ObjectId.isValid(options.customerId)) {
+    // Allow customer to refresh / proceed with checkout on their own pending hold;
+    // other customers or confirmed bookings remain blocked
+    overlapConditions.push({
+      $or: [
+        { status: { $in: ['confirmed', 'reviewed'] } },
+        { customer: { $ne: new mongoose.Types.ObjectId(options.customerId) } },
+      ],
+    });
+  }
+
+  const overlappingBooking = await BookingRequest.findOne({ $and: overlapConditions });
 
   if (overlappingBooking) {
     return {
