@@ -226,6 +226,57 @@ class EmailService {
       };
     }
   }
+
+  public async sendBookingConfirmationEmail(params: {
+    to: string;
+    fullName: string;
+    bookingId: string;
+    listingTitle: string;
+    requestedDate: string;
+    timeWindow: string;
+    amount: number;
+    paymentId: string;
+  }): Promise<EmailResult> {
+    const isTestMode = process.env.NODE_ENV === 'test' || env.NODE_ENV === 'test';
+    if (isTestMode || !this.isConfigured || !this.transporter) {
+      console.log(`ℹ️ [SIMULATED EMAIL] Booking confirmation dispatch for: ${maskEmail(params.to)}`);
+      return { delivered: false, simulated: true };
+    }
+
+    const html = `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 560px; margin: 0 auto; background: #09090B; color: #FAFAFA; padding: 32px; border-radius: 16px; border: 1px solid #27272A;">
+        <h2 style="color: #10B981; margin-top: 0; letter-spacing: -0.5px;">BOOKMYSTUDIO</h2>
+        <h3 style="color: #FAFAFA; margin-bottom: 8px;">Reservation Confirmed!</h3>
+        <p style="color: #A1A1AA; font-size: 14px; line-height: 1.6;">Hello ${params.fullName},</p>
+        <p style="color: #A1A1AA; font-size: 14px; line-height: 1.6;">Your booking for <strong>${params.listingTitle}</strong> has been successfully paid and confirmed.</p>
+        <div style="background: #18181B; padding: 20px; border-radius: 12px; margin: 24px 0; border: 1px solid #27272A; font-size: 14px;">
+          <p style="margin: 4px 0; color: #A1A1AA;">Booking Reference: <strong style="color: #FAFAFA;">${params.bookingId}</strong></p>
+          <p style="margin: 4px 0; color: #A1A1AA;">Shoot Date: <strong style="color: #FAFAFA;">${params.requestedDate}</strong></p>
+          <p style="margin: 4px 0; color: #A1A1AA;">Time Window: <strong style="color: #FAFAFA;">${params.timeWindow}</strong></p>
+          <p style="margin: 4px 0; color: #A1A1AA;">Total Paid: <strong style="color: #10B981;">₹${params.amount.toLocaleString('en-IN')}</strong></p>
+          <p style="margin: 4px 0; color: #A1A1AA;">Payment ID: <strong style="color: #FAFAFA; font-family: monospace;">${params.paymentId}</strong></p>
+        </div>
+        <p style="color: #71717A; font-size: 12px; margin-top: 24px; border-top: 1px solid #27272A; padding-top: 16px;">BookMyStudio Commercial Production Marketplace</p>
+      </div>
+    `;
+
+    try {
+      const info = await this.transporter.sendMail({
+        from: env.SMTP_FROM,
+        to: params.to,
+        subject: `Booking Confirmed: ${params.listingTitle} (${params.bookingId})`,
+        text: `Your booking for ${params.listingTitle} on ${params.requestedDate} is confirmed. Payment ID: ${params.paymentId}`,
+        html,
+      });
+
+      console.log(`✉️ Booking confirmation sent via SMTP to: ${maskEmail(params.to)}`);
+      return { delivered: true, simulated: false, messageId: info.messageId };
+    } catch (err: any) {
+      const errorMsg = sanitizeErrorMessage(err?.message || 'Failed to dispatch email');
+      console.error(`❌ Failed to deliver booking confirmation to ${maskEmail(params.to)}:`, errorMsg);
+      return { delivered: false, simulated: false, error: errorMsg };
+    }
+  }
 }
 
 export const emailService = new EmailService();
